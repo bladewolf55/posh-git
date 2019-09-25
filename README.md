@@ -5,7 +5,7 @@
 [![posh-git on Chocolatey][choco-img]][choco-site]
 
 Table of contents:
-
+- [About the TFS Modification](#about-the-tfs-modification)
 - [Overview](#overview)
 - [Versions](#versions)
 - [Installation](#installation)
@@ -14,6 +14,26 @@ Table of contents:
 - [Customization variables](#customization-variables)
 - [Customizing the posh-git prompt](#customizing-the-posh-git-prompt)
 - [Based on work by](#based-on-work-by)
+
+## About the TFS Modification
+Visual Studio supports both TFVC and Git version controls, and you're allowed to choose which one to use via Options > Source Control. Except, not really. If your solution has a .git folder or .git file, VS assumes you're using Git even if you also have a $tf file or your solution/projecs are configured for TFVC. 
+
+I created this version of posh-git to handle a specific use case: a developer works for a company that requires using TFVC, but she wants to use Git locally to gain its rapid branching/merging abilities. Yet, she also wants to get the benefits of using Visual Studio's TFVC integration, namely CodeLens information.
+
+The general solution is:
+
+*   Rename .git to _git
+*   Set environment variable GIT_DIR to the full path to the _git folder
+*   Set environment variable GIT_WORK_TREE to the full path to the working folder
+*   Add line to .gitignore to ignore the _git folder
+
+My modifications to the `GitUtils.ps1` file accomplish that. 
+
+As a bonus, in the `test _git` folder there's a file containing a Git alias to initialize a repo using a _git folder and the appropriate .gitignore and .tfignore changes.
+
+It's not fancy, and I'm sure a better developer can improve on it.
+
+--clf
 
 ## Overview
 

@@ -3,13 +3,21 @@
 
 <#
 .SYNOPSIS
-    Gets the path to the current repository's .git dir.
+    Gets the path to the current repository's _git dir.
 .DESCRIPTION
-    Gets the path to the current repository's .git dir.  Or if the repository
+    Gets the path to the current repository's _git dir.  Or if the repository
     is a bare repository, the root directory of the bare repository.
+
+    Modified to use the _git folder to allow local Git development
+    while still supporting Team Foundation Version Control (TFVC) in
+    Microsoft Visual Studio. 
+    
+    If Visual Studio finds a .git folder or file,
+    it assumes Git is the desired version control regardless of what the user
+    has selected in Options > Source Control.
 .EXAMPLE
     PS C:\GitHub\posh-git\tests> Get-GitDirectory
-    Returns C:\GitHub\posh-git\.git
+    Returns C:\GitHub\posh-git\_git
 .INPUTS
     None.
 .OUTPUTS
@@ -20,24 +28,30 @@ function Get-GitDirectory {
     if (!$pathInfo -or ($pathInfo.Provider.Name -ne 'FileSystem')) {
         $null
     }
-    elseif ($Env:GIT_DIR) {
-        $Env:GIT_DIR -replace '\\|/', [System.IO.Path]::DirectorySeparatorChar
-    }
+    # elseif ($Env:GIT_DIR) {
+    #     $Env:GIT_DIR -replace '\\|/', [System.IO.Path]::DirectorySeparatorChar
+    # }
     else {
         $currentDir = Get-Item -LiteralPath $pathInfo -Force
         while ($currentDir) {
-            $gitDirPath = Join-Path $currentDir.FullName .git
+            $gitDirPath = Join-Path $currentDir.FullName _git
             if (Test-Path -LiteralPath $gitDirPath -PathType Container) {
+                $Env:GIT_DIR = $gitDirPath
+                $Env:GIT_WORK_TREE = Split-Path $gitDirPath -Parent
                 return $gitDirPath
+            }
+            else {
+                Remove-Item Env:\GIT_DIR
+                Remove-Item Env:\GIT_WORK_TREE
             }
 
             # Handle the worktree case where .git is a file
-            if (Test-Path -LiteralPath $gitDirPath -PathType Leaf) {
-                $gitDirPath = Invoke-Utf8ConsoleCommand { git rev-parse --git-dir 2>$null }
-                if ($gitDirPath) {
-                    return $gitDirPath
-                }
-            }
+            # if (Test-Path -LiteralPath $gitDirPath -PathType Leaf) {
+            #     $gitDirPath = Invoke-Utf8ConsoleCommand { git rev-parse --git-dir 2>$null }
+            #     if ($gitDirPath) {
+            #         return $gitDirPath
+            #     }
+            # }
 
             $headPath = Join-Path $currentDir.FullName HEAD
             if (Test-Path -LiteralPath $headPath -PathType Leaf) {

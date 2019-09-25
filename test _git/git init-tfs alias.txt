@@ -1,0 +1,4 @@
+# Initialize a git repo, rename to _git, create or append a .gitignore file 
+# to exclude the _git folder, create or append a .tfignore file 
+# to ignore _git  and .git*
+init-tfs = !git init && mv .git _git && echo "_git/" >> .gitignore && echo "_git" >> .tfignore && echo ".git*" >> .tfignore
