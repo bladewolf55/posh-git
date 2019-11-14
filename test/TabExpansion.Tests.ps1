@@ -1,9 +1,17 @@
 . $PSScriptRoot\Shared.ps1
 
-Describe 'TabExpansion Tests' {
-    It 'Exports a TabExpansion function' {
+Describe 'TabExpansion function test' {
+    BeforeAll {
+        if ($PSVersionTable.PSVersion.Major -gt 5) {
+            $PSDefaultParameterValues["it:skip"] = $true
+        }
+    }
+    It 'Windows PowerShell v5 exports a TabExpansion function' {
         $module.ExportedFunctions.Keys -contains 'TabExpansion' | Should Be $true
     }
+}
+
+Describe 'TabExpansion Tests' {
     Context 'Subcommand TabExpansion Tests' {
         It 'Tab completes without subcommands' {
             $result = & $module GitTabExpansionInternal 'git whatever '
@@ -178,14 +186,14 @@ Describe 'TabExpansion Tests' {
         }
     }
 
-    Context 'Remove-GitBranch TabExpansion Tests' {
-        It 'Tab completes branches by positional parameter' {
-            $result = & $module GitTabExpansionInternal 'Remove-GitBranch mas'
+    Context 'Restore Source Branch TabExpansion Tests' {
+        It 'Tab completes source branches -s' {
+            $result = & $module GitTabExpansionInternal 'git restore -s mas'
             $result | Should BeExactly 'master'
         }
-        It 'Tab completes branches by named parameter' {
-            $result = & $module GitTabExpansionInternal 'Remove-GitBranch -IncludeUnmerged -WhatIf -Name mas'
-            $result | Should BeExactly 'master'
+        It 'Tab completes source branches --source=' {
+            $result = & $module GitTabExpansionInternal 'git restore --source=mas'
+            $result | Should BeExactly '--source=master'
         }
     }
 
